@@ -13,11 +13,15 @@
 ## Task:
 &emsp; Make a todo-list with the ability to view the task list, add new tasks, edit and delete existing tasks.
 Use dependencies that are needed to work with MySQL, Hibernate, Spring, Spring MVC, Thymeleaf.
+<div align="center">
+<img  width="70%" src="https://i.ibb.co/0yjCN0x/2023-03-29-12-55-15.png"/>
+</div>
 
 ### Instructions for launching:
-- the project is launched from tomcat 9.0.68 http://localhost:8080/
-- username: root
-- password: mysql
+- docker compose run
+
+After deployed is container, the application will be available at http://localhost:8080/todo_666/
+
 ---
 
 ---
