@@ -18,7 +18,6 @@ Use dependencies that are needed to work with MySQL, Hibernate, Spring, Spring M
 - the project is launched from tomcat 9.0.68 http://localhost:8080/
 - username: root
 - password: mysql
-
 ---
 
 ---
