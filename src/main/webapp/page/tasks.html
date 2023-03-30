@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks</title>
+
+    <link href="/style/main.css" rel="stylesheet">
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+            crossorigin="anonymous"
+    />
+    <style>
+        .custab {
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin: 5% 0;
+            box-shadow: 3px 3px 2px #ccc;
+            transition: 0.5s;
+        }
+
+        .custab:hover {
+            box-shadow: 3px 3px 0px transparent;
+            transition: 0.5s;
+        }
+
+        .button_page {
+            color: white;
+            border: 2px solid black;
+            margin: 5px;
+            padding: 20px;
+            font-size: large;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="/script/my.js"></script>
+</head>
+
+<body>
+<div class="container text-center my-5">
+    <div class="row col-lg-6 col-md-8 col-sm-12 mx-auto custyle">
+        <table class="table table-striped custab">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="task, number : ${tasks}">
+                <td th:text="${task.id}"/>
+                <td th:text="${task.description}" th:id="'description_' + ${task.id}"/>
+                <td th:text="${task.status}" th:id="'status_' + ${task.id}"/>
+                <td class="text-center">
+                    <a class='btn btn-info btn-xs' th:id="'edit_' + ${task.id}"
+                       th:onclick="'edit_task(' + ${task.id} + ')'">
+                        <span class="glyphicon glyphicon-edit"></span>
+                        Edit
+                    </a>
+                    <a class="btn btn-danger btn-xs" th:id="'delete_' + ${task.id}"
+                       th:onclick="'delete_task(' + ${task.id} + ')'">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Del
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2>
+            <a th:each="pageNumber : ${page_numbers}" class='btn btn-warning btn-xs button_page'
+               th:href="@{/(page=${pageNumber}, limit=10)}" th:text="${pageNumber}"
+               th:classappend="${pageNumber == current_page? 'active_page' : ''}">
+                <span class="glyphicon glyphicon-edit"></span>
+                Edit
+            </a>
+        </h2>
+
+        <table class="table table-striped custab">
+            <tbody>
+            <tr>
+                <td>
+                    <input id='description_new' type="text" class="form-control" placeholder="description task"
+                           aria-describedby="basic-addon1">
+                </td>
+                <td>
+                    <label for='status_new'></label>
+                    <select id='status_new' class="form-select">
+                        <option selected value='IN_PROGRESS'>IN_PROGRESS</option>
+                        <option value='DONE'>DONE</option>
+                        <option value='PAUSED'>PAUSED</option>
+                    </select>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a class="btn btn-primary btn-xs pull-right" id='save_new' onclick='add_task()'><b>+</b> Add new task</a>
+
+    </div>
+</div>
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"
+></script>
+
+<script>
+    function delete_task(task_id) {
+        let url = getBaseUrl() + task_id;
+        $.ajax({
+            url: url,
+            type: 'DELETE',
+            success: function () {
+                window.location.reload();
+            }
+        });
+    }
+
+    function edit_task(task_id) {
+        //lock delete button
+        let identifier_delete = "#delete_" + task_id;
+        $(identifier_delete).remove();
+
+        //replace "edit" button with "save"
+        let identifier_edit = "#edit_" + task_id;
+        // let save_tag = "<button id='save_" + task_id + "'>Save</button>";
+        let save_tag = "<a class='btn btn-success btn-xs'  id='save_" + task_id + "'><span class='glyphicon glyphicon-remove'></span>Save</a>";
+        $(identifier_edit).html(save_tag);
+        let property_save_tag = "update_task(" + task_id + ")";
+        $(identifier_edit).attr("onclick", property_save_tag);
+
+        let current_tr_element = $(identifier_edit).parent().parent();
+        let children = current_tr_element.children();
+        let td_description = children[1];
+        td_description.innerHTML = "<input id='input_description_" + task_id
+            + "' class='form-control' type='text' placeholder='description task' aria-describedby='basic-addon1' value='"
+            + td_description.innerHTML + "'>";
+        let td_status = children[2];
+        let status_id = "#select_status_" + task_id;
+        let status_current_value = td_status.innerHTML;
+        td_status.innerHTML = getDropdownStatusHtml(task_id);
+        $(status_id).val(status_current_value).change();
+    }
+
+    function getDropdownStatusHtml(task_id) {
+        let status_id = "select_status_" + task_id;
+        return "<label for='status'></label>"
+            + "<select id=" + status_id + " class='form-select' name='status'>"
+            + "<option selected value='IN_PROGRESS'>IN_PROGRESS</option>"
+            + "<option value='DONE'>DONE</option>"
+            + "<option value='PAUSED'>PAUSED</option>"
+            + "</select>";
+    }
+
+    function update_task(task_id) {
+        let url = getBaseUrl() + task_id;
+        let value_description = $("#input_description_" + task_id).val();
+        let value_status = $("#select_status_" + task_id).val();
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            async: false,
+            data: JSON.stringify({"description": value_description, "status": value_status})
+        });
+
+        setTimeout(() => {
+            document.location.reload();
+        }, 300);
+    }
+
+    function add_task() {
+        let value_description = $("#description_new").val();
+        let value_status = $("#status_new").val();
+
+        $.ajax({
+            url: getBaseUrl(),
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json;charset=UTF-8',
+            async: false,
+            data: JSON.stringify({"description": value_description, "status": value_status})
+        });
+
+        setTimeout(() => {
+            document.location.reload();
+        }, 300);
+
+    }
+
+    function getBaseUrl() {
+        let current_path = window.location.href;
+        let end_position = current_path.indexOf('?');
+        return current_path.substring(0, end_position);
+    }
+</script>
+</body>
+</html>
